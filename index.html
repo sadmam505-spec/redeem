@@ -152,7 +152,7 @@
 			}
 
 			/* ==========================================================================
-			3. LIVE WITHDRAWALS LABELS & LISTVIEW (WITH BALANCED COLUMNS)
+			3. LIVE WITHDRAWALS LABELS & LISTVIEW (PERFECT ALIGNMENT)
 			========================================================================== */
 			.live-section-title {
 			font-size: 0.8rem;
@@ -171,10 +171,10 @@
 			animation: blink 1.5s infinite;
 			}
 
-			/* Table Header Row (Perfect Layout Alignment Match) */
+			/* Table Header Row - Grid System ফর গ্যারান্টিড মিডল অ্যালাইনমেন্ট */
 			.table-label-row {
-			display: flex;
-			justify-content: space-between;
+			display: grid;
+			grid-template-columns: 1.4fr 1.2fr 1fr;
 			padding: 0 14px 8px 14px;
 			border-bottom: 1px solid #111;
 			margin-bottom: 10px;
@@ -187,9 +187,9 @@
 			text-transform: uppercase;
 			letter-spacing: 0.5px;
 			}
-			.lbl-time { flex: 1.4; text-align: left; }
-			.lbl-amount { flex: 1.2; text-align: center; }
-			.lbl-status { flex: 1; text-align: right; }
+			.lbl-time { text-align: left; }
+			.lbl-amount { text-align: center; }
+			.lbl-status { text-align: right; }
 
 			/* Dynamic ListView Container */
 			.proof-listview {
@@ -199,20 +199,21 @@
 			position: relative;
 			}
 
-			/* ListView Item Base with CSS Smooth Transition */
+			/* Row Base - Grid লেআউট যাতে কলাম কখনো তার পজিশন থেকে না নড়ে */
 			.listview-item {
 			background: #050505;
 			border: 1px solid #111;
 			border-radius: 12px;
 			padding: 12px 14px;
-			display: flex;
+
+			display: grid;
+			grid-template-columns: 1.4fr 1.2fr 1fr;
 			align-items: center;
-			justify-content: space-between;
 
 			max-height: 60px;
 			opacity: 1;
 			transform: translateY(0);
-			transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+			transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 			}
 
 			/* Animation class assigned dynamically to 1st position */
@@ -226,17 +227,16 @@
 			font-weight: 700;
 			letter-spacing: 0.5px;
 			font-family: 'Courier New', Courier, monospace;
-			flex: 1.4;
 			text-align: left;
 			}
 
-			/* অ্যামাউন্ট এখন পারফেক্টলি মাঝখানে লকড */
+			/* অ্যামাউন্ট এবার ১০০% হেডার লেবেলের ঠিক মাঝখানে থাকবে */
 			.item-amount {
 			font-size: 0.82rem;
 			font-weight: 850;
 			color: #f39c12;
-			flex: 1.2;
 			text-align: center;
+			white-space: nowrap;
 			}
 
 			/* প্রিমিয়াম বক্স টাইপ স্ট্যাটাস ক্যাপসুল ব্যাজ */
@@ -253,14 +253,13 @@
 			border-radius: 6px;
 			box-shadow: 0 0 10px rgba(0, 255, 204, 0.03);
 
-			flex: 1;
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
 			gap: 4px;
 			width: fit-content;
-			max-width: 75px;
-			margin-left: auto; /* ডানপাশে লকড থাকবে */
+			min-width: 72px;
+			justify-self: end; /* ডানপাশে ফিক্সড লকড */
 			}
 
 			.proof-loading {
@@ -493,7 +492,7 @@
 			const database = firebase.database();
 
 			let userCurrentPoints = 18500;
-			let isFirstLoad = true;
+			let lastKnownFirstTime = ""; // লেটেস্ট ডাটা ট্র্যাক করার জন্য গ্লোবাল ভেরিয়েবল
 
 			// ২. লোকাল টাইমজোন ফরম্যাটার (DD/MM/YY  HH:MM:SS)
 			function formatLocalTime(firebaseTimestamp) {
@@ -524,16 +523,20 @@
 
 			const sortedKeys = Object.keys(firebaseData).sort((a, b) => parseInt(a) - parseInt(b));
 
-			// প্রথমবার ডাটা লোড
-			if (isFirstLoad) {
+			// কারেন্ট ১ নম্বর ডাটার ফর্ম্যাটেড টাইম বের করি
+			const currentLatestTime = formatLocalTime(firebaseData["1"].time);
+
+			// কেইস ১: প্রথমবার ডাটা লোড (কোনো অ্যানিমেশন ছাড়া নরমাল জেনারেশন)
+			if (lastKnownFirstTime === "") {
 			listViewContainer.innerHTML = "";
+			lastKnownFirstTime = currentLatestTime; // ট্র্যাক লক করলাম
 
 			sortedKeys.forEach(key => {
 			const item = firebaseData[key];
 			const dynamicTime = formatLocalTime(item.time);
 
 			const rowHTML = `
-			<div class="listview-item" id="payout-row-${key}">
+			<div class="listview-item">
 				<div class="item-time">${dynamicTime}</div>
 				<div class="item-amount">${item.amount}</div>
 				<div class="item-status">
@@ -541,63 +544,37 @@
 				</div>
 			</div>
 			`;
-			listViewContainer.insertAdjacentHTML('beforeend', rowHTML);
+			listViewContainer.innerHTML += rowHTML;
 			});
-
-			isFirstLoad = false;
 			return;
 			}
 
-			// নতুন ডাটা পুশ অ্যানিমেশন ইঞ্জিন
-			const latestItem = firebaseData["1"];
-			const latestTimeFormatted = formatLocalTime(latestItem.time);
+			// কেইস ২: রানিং অ্যাপে ফায়ারবেজে নতুন ডাটা পুশ হলে (১ নম্বরের টাইম চেঞ্জ হলে)
+			if (lastKnownFirstTime !== currentLatestTime) {
+			lastKnownFirstTime = currentLatestTime; // নতুন টাইম সেট করলাম
 
-			const existingFirstRow = document.getElementById("payout-row-1");
-			let existingFirstTime = existingFirstRow ? existingFirstRow.querySelector('.item-time').innerHTML : "";
+			let fullNewListHTML = "";
 
-			if (existingFirstTime !== latestTimeFormatted) {
+			sortedKeys.forEach(key => {
+			const item = firebaseData[key];
+			const dynamicTime = formatLocalTime(item.time);
 
-			// ১. টপে পুশ করার জন্য নতুন রো এলিমেন্ট তৈরি
-			const newRow = document.createElement("div");
-			newRow.className = "listview-item new-payout-animate";
-			newRow.id = "payout-row-1";
-			newRow.innerHTML = `
-			<div class="item-time">${latestTimeFormatted}</div>
-			<div class="item-amount">${latestItem.amount}</div>
-			<div class="item-status">
-				<i class="fa-solid fa-check"></i> ${latestItem.status}
+			// যদি ১ নম্বর রো হয়, তবে অ্যানিমেশন ক্লাস যোগ হবে, বাকিগুলো নরমাল থাকবে
+			const animationClass = (key === "1") ? "listview-item new-payout-animate" : "listview-item";
+
+			fullNewListHTML += `
+			<div class="${animationClass}">
+				<div class="item-time">${dynamicTime}</div>
+				<div class="item-amount">${item.amount}</div>
+				<div class="item-status">
+					<i class="fa-solid fa-check"></i> ${item.status}
+				</div>
 			</div>
 			`;
-
-			// ২. আগের ১ নম্বরের আইডি পরিবর্তন
-			if (existingFirstRow) {
-			existingFirstRow.id = "payout-row-temp-moved";
-			}
-
-			// ৩. টপে ইনসার্ট
-			listViewContainer.insertBefore(newRow, listViewContainer.firstChild);
-
-			// ৪. বাকি রোগুলোর ডেটা ট্রানজিশন আপডেট
-			setTimeout(() => {
-			sortedKeys.forEach(key => {
-			const currentKeyInt = parseInt(key);
-			if (currentKeyInt > 1) {
-			const rowElement = document.getElementById(`payout-row-${key}`);
-			const updatedDataForThisSlot = firebaseData[key];
-
-			if (rowElement && updatedDataForThisSlot) {
-			rowElement.querySelector('.item-time').innerHTML = formatLocalTime(updatedDataForThisSlot.time);
-			rowElement.querySelector('.item-amount').innerHTML = updatedDataForThisSlot.amount;
-			rowElement.querySelector('.item-status').innerHTML = `<i class="fa-solid fa-check"></i> ${updatedDataForThisSlot.status}`;
-			}
-			}
 			});
 
-			// আইডি রিসেট
-			const tempMovedRow = document.getElementById("payout-row-temp-moved");
-			if (tempMovedRow) tempMovedRow.id = "payout-row-2";
-
-			}, 50);
+			// পুরো ডম লেআউট একসাথে গ্রিড বেইজড স্ট্রাকচারে রিপ্লেস
+			listViewContainer.innerHTML = fullNewListHTML;
 			}
 
 			}, (error) => {
