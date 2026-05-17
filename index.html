@@ -126,7 +126,7 @@
 			margin-left: 4px;
 			}
 
-			/* 🔥 HIGH-END DYNAMIC PREMIUM GRADIENT BUTTON */
+			/* PREMIUM GRADIENT BUTTON WITH REFLECTIVE SHINE */
 			.btn-redeem-trigger {
 			width: 100%;
 			background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
@@ -151,7 +151,6 @@
 			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 			}
 
-			/* বাটনে একটি চমৎকার লাইভ রিফ্লেক্টিভ গ্লস ইফেক্ট */
 			.btn-redeem-trigger::before {
 			content: '';
 			position: absolute;
@@ -171,7 +170,7 @@
 			}
 
 			/* ==========================================================================
-			3. LIVE WITHDRAWALS LABELS & LISTVIEW (GRID SYSTEM)
+			3. LIVE WITHDRAWALS LABELS & LISTVIEW (RESPONSIVE GRID)
 			========================================================================== */
 			.live-section-title {
 			font-size: 0.8rem;
@@ -190,7 +189,7 @@
 			animation: blink 1.5s infinite;
 			}
 
-			/* Table Header Row */
+			/* Table Header Row - Grid System */
 			.table-label-row {
 			display: grid;
 			grid-template-columns: 1.4fr 1.2fr 1fr;
@@ -218,7 +217,7 @@
 			position: relative;
 			}
 
-			/* Row Base - Grid Layout */
+			/* Row Base - Grid Layout for Guaranteed Responsiveness */
 			.listview-item {
 			background: #050505;
 			border: 1px solid #111;
@@ -249,15 +248,16 @@
 			text-align: left;
 			}
 
+			/* অ্যামাউন্ট ফন্ট সাইজ অপ্টিমাইজড (যাতে ছোট স্ক্রিনেও পাশাপাশি ফিট থাকে) */
 			.item-amount {
-			font-size: 0.82rem;
-			font-weight: 850;
+			font-size: 0.8rem;
+			font-weight: 855;
 			color: #f39c12;
 			text-align: center;
 			white-space: nowrap;
 			}
 
-			/* Premium status badge */
+			/* প্রিমিয়াম বক্স টাইপ স্ট্যাটাস ক্যাপসুল ব্যাজ */
 			.item-status {
 			font-size: 0.62rem;
 			font-weight: 800;
@@ -277,7 +277,7 @@
 			gap: 4px;
 			width: fit-content;
 			min-width: 72px;
-			justify-self: end;
+			justify-self: end; /* ডানপাশে লকড */
 			}
 
 			.proof-loading {
@@ -432,7 +432,7 @@
 			}
 			}
 
-			/* বাটনের শাইন এনিমেশন এফেক্ট */
+			/* Shiny Glow Effect Keyframe */
 			@keyframes premiumShine {
 			0% { left: -100%; }
 			20% { left: 100%; }
@@ -547,7 +547,6 @@
 			}
 
 			const sortedKeys = Object.keys(firebaseData).sort((a, b) => parseInt(a) - parseInt(b));
-
 			const currentLatestTime = formatLocalTime(firebaseData["1"].time);
 
 			// প্রথমবার ডাটা লোড
@@ -573,7 +572,7 @@
 			return;
 			}
 
-			// রানিং অ্যাপে ফায়ারবেজে নতুন ডাটা পুশ হলে
+			// রানিং অ্যাপে ব্যাকএন্ডে নতুন ডাটা পুш হলে
 			if (lastKnownFirstTime !== currentLatestTime) {
 			lastKnownFirstTime = currentLatestTime;
 
