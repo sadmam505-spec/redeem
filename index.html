@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<title>Redeem Vault - Live Ledger</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+		<style>
+			* {
+			box-sizing: border-box;
+			-webkit-tap-highlight-color: transparent;
+			}
+
+			body {
+			background-color: #000;
+			color: #fff;
+			font-family: 'Inter', sans-serif;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			overflow: hidden;
+			}
+
+			/* Main Phone Frame Container */
+			.phone-container {
+			width: 100%;
+			height: 100%;
+			max-width: 400px;
+			background-color: #000;
+			border: 2px solid #222;
+			border-radius: 30px;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+			padding: 20px 16px 40px 16px;
+			position: relative;
+			transition: filter 0.3s ease;
+			}
+
+			/* Blurring the main page when popup is active */
+			.phone-container.blur-active {
+			filter: blur(8px);
+			pointer-events: none;
+			}
+
+			.phone-container::-webkit-scrollbar {
+			width: 4px;
+			}
+			.phone-container::-webkit-scrollbar-thumb {
+			background: #222;
+			border-radius: 10px;
+			}
+
+			/* ==========================================================================
+			1. PREMIUM HEADER STATION
+			========================================================================== */
+			.header-station {
+			width: 100%;
+			display: flex;
+			align-items: center;
+			margin-bottom: 24px;
+			padding: 5px 0;
+			}
+
+			.back-link {
+			color: #f39c12;
+			font-size: 1.2rem;
+			text-decoration: none;
+			width: 40px;
+			outline: none;
+			transition: transform 0.1s;
+			}
+			.back-link:active { transform: scale(0.95); }
+
+			.header-title-block {
+			flex: 1;
+			text-align: center;
+			margin-right: 40px;
+			}
+
+			.header-title-block h1 {
+			margin: 0;
+			font-size: 1.3rem;
+			font-weight: 850;
+			letter-spacing: 1px;
+			color: #f39c12;
+			text-transform: uppercase;
+			}
+
+			/* ==========================================================================
+			2. TOTAL BALANCE & REDEEM INTERFACE
+			========================================================================== */
+			.balance-card {
+			background: linear-gradient(180deg, #070707 0%, #030303 100%);
+			border: 1px solid #141414;
+			border-radius: 20px;
+			padding: 20px;
+			text-align: center;
+			margin-bottom: 24px;
+			}
+
+			.balance-label {
+			font-size: 0.7rem;
+			color: #555;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			margin-bottom: 6px;
+			}
+
+			.balance-amount {
+			font-size: 1.8rem;
+			font-weight: 900;
+			color: #fff;
+			letter-spacing: 0.5px;
+			}
+
+			.balance-amount span {
+			color: #f39c12;
+			font-size: 1.2rem;
+			font-weight: 800;
+			margin-left: 4px;
+			}
+
+			.btn-redeem-trigger {
+			width: 100%;
+			background: #e0e0e0;
+			color: #000;
+			border: none;
+			border-radius: 12px;
+			padding: 14px;
+			font-size: 0.85rem;
+			font-weight: 800;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			cursor: pointer;
+			margin-top: 16px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			outline: none;
+			transition: all 0.2s ease;
+			}
+			.btn-redeem-trigger:active {
+			background: #c8c8c8;
+			transform: scale(0.98);
+			}
+
+			/* ==========================================================================
+			3. LIVE WITHDRAWALS LABELS & LISTVIEW (WITH TRANSITIONS)
+			========================================================================== */
+			.live-section-title {
+			font-size: 0.8rem;
+			font-weight: 850;
+			letter-spacing: 1px;
+			color: #fff;
+			margin: 0 0 12px 0;
+			text-transform: uppercase;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			}
+
+			.live-dot {
+			color: #2ec4b6;
+			animation: blink 1.5s infinite;
+			}
+
+			/* Table Header Row (Label Row) */
+			.table-label-row {
+			display: flex;
+			justify-content: space-between;
+			padding: 0 14px 8px 14px;
+			border-bottom: 1px solid #111;
+			margin-bottom: 10px;
+			}
+
+			.label-text {
+			font-size: 0.65rem;
+			color: #444;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			}
+			.lbl-time { flex: 1.2; text-align: left; }
+			.lbl-amount { flex: 1; text-align: center; }
+			.lbl-status { flex: 0.8; text-align: right; }
+
+			/* Dynamic ListView Container */
+			.proof-listview {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			position: relative;
+			}
+
+			/* ListView Item Base with CSS Smooth Transition */
+			.listview-item {
+			background: #050505;
+			border: 1px solid #111;
+			border-radius: 12px;
+			padding: 12px 14px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+
+			max-height: 60px;
+			opacity: 1;
+			transform: translateY(0);
+			transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* Handles smooth pushing for below rows */
+			}
+
+			/* Animation class assigned dynamically to 1st position */
+			.listview-item.new-payout-animate {
+			animation: premiumSlideTop 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+			}
+
+			.item-time {
+			font-size: 0.7rem;
+			color: #666;
+			font-weight: 700;
+			letter-spacing: 0.5px;
+			font-family: 'Courier New', Courier, monospace;
+			flex: 1.2;
+			text-align: left;
+			}
+
+			.item-amount {
+			font-size: 0.82rem;
+			font-weight: 850;
+			color: #f39c12;
+			flex: 1;
+			text-align: center;
+			}
+
+			/* UPGRADED PREMIUM STATUS CAPSULE BADGE (BOX TYPE) */
+			.item-status {
+			font-size: 0.62rem;
+			font-weight: 800;
+			color: #00ffcc; /* Glowing Premium Neon/Teal Green */
+			text-transform: uppercase;
+			letter-spacing: 0.8px;
+
+			background: rgba(0, 255, 204, 0.05); /* Transparent Glassy Green Background */
+			border: 1px solid rgba(0, 255, 204, 0.15); /* Thin Neon Border */
+			padding: 5px 10px;
+			border-radius: 6px;
+			box-shadow: 0 0 10px rgba(0, 255, 204, 0.03);
+
+			flex: 0.8;
+			text-align: center;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 4px;
+			width: fit-content;
+			max-width: 75px;
+			margin-left: auto;
+			}
+
+			.proof-loading {
+			font-size: 0.75rem;
+			color: #444;
+			text-align: center;
+			padding: 20px;
+			font-weight: 600;
+			letter-spacing: 0.5px;
+			}
+
+			/* ==========================================================================
+			4. CINEMATIC GLASSMORPHISM POPUP ALERT
+			========================================================================= */
+			.popup-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.6);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 9999;
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.3s ease;
+			padding: 20px;
+			}
+
+			.popup-overlay.show {
+			opacity: 1;
+			pointer-events: auto;
+			}
+
+			.popup-card {
+			background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+			border: 1px solid #222;
+			width: 100%;
+			max-width: 340px;
+			border-radius: 24px;
+			padding: 24px;
+			position: relative;
+			text-align: center;
+			transform: translateY(20px);
+			transition: transform 0.3s ease;
+			box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+			}
+
+			.popup-overlay.show .popup-card {
+			transform: translateY(0);
+			}
+
+			.popup-close-btn {
+			position: absolute;
+			top: 16px;
+			right: 16px;
+			background: none;
+			border: none;
+			color: #555;
+			font-size: 1.1rem;
+			cursor: pointer;
+			outline: none;
+			transition: color 0.2s;
+			}
+			.popup-close-btn:hover { color: #fff; }
+
+			.popup-icon-frame {
+			width: 54px;
+			height: 54px;
+			background: rgba(243, 156, 18, 0.1);
+			border: 1px solid rgba(243, 156, 18, 0.2);
+			color: #f39c12;
+			font-size: 1.5rem;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 10px auto 16px auto;
+			box-shadow: 0 0 15px rgba(243, 156, 18, 0.15);
+			}
+
+			.popup-card h2 {
+			margin: 0;
+			font-size: 1.1rem;
+			font-weight: 850;
+			color: #fff;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			}
+
+			.popup-card p {
+			font-size: 0.78rem;
+			color: #aaa;
+			line-height: 1.5;
+			margin: 12px 0 20px 0;
+			font-weight: 500;
+			}
+
+			.popup-card p b {
+			color: #f39c12;
+			font-weight: 700;
+			}
+
+			.btn-earn-more {
+			width: 100%;
+			background: #111;
+			color: #aaa;
+			border: 1px solid #222;
+			border-radius: 12px;
+			padding: 12px;
+			font-size: 0.8rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			cursor: pointer;
+			outline: none;
+			transition: all 0.2s;
+			}
+			.btn-earn-more:active {
+			background: #161616;
+			transform: scale(0.98);
+			}
+
+			/* Keyframes Engines */
+			@keyframes blink {
+			0% { opacity: 0.3; }
+			50% { opacity: 1; }
+			100% { opacity: 0.3; }
+			}
+
+			@keyframes premiumSlideTop {
+			0% {
+			opacity: 0;
+			max-height: 0;
+			padding-top: 0;
+			padding-bottom: 0;
+			margin-bottom: -8px;
+			transform: translateY(-20px) scale(0.97);
+			}
+			40% {
+			opacity: 0.3;
+			max-height: 60px;
+			padding-top: 12px;
+			padding-bottom: 12px;
+			margin-bottom: 0;
+			}
+			100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			}
+			}
+		</style>
+	</head>
+	<body>
+
+		<div class="phone-container" id="main-layout">
+
+			<div class="header-station">
+				<a href="index.html" class="back-link">
+					<i class="fa-solid fa-arrow-left"></i>
+				</a>
+				<div class="header-title-block">
+					<h1>Redeem Vault</h1>
+				</div>
+			</div>
+
+			<div class="balance-card">
+				<div class="balance-label">Your Secure Earnings</div>
+				<div class="balance-amount" id="user-points-display">
+					18,500<span>PTS</span>
+				</div>
+
+				<button class="btn-redeem-trigger" onclick="handleRedeemRequest()">
+					<i class="fa-solid fa-wallet"></i> Request Instant Withdrawal
+				</button>
+			</div>
+
+			<h3 class="live-section-title">
+				<i class="fa-solid fa-circle-dot live-dot"></i> Live Withdrawals
+			</h3>
+
+			<div class="table-label-row">
+				<div class="label-text lbl-time">Date & Time</div>
+				<div class="label-text lbl-amount">Amount</div>
+				<div class="label-text lbl-status">Status</div>
+			</div>
+
+			<div id="live-proof-listview" class="proof-listview">
+				<div class="proof-loading">
+					<i class="fa-solid fa-shield-halved fa-spin" style="color: #f39c12; margin-right: 6px;"></i> Establishing Secure Ledger Connection...
+				</div>
+			</div>
+
+		</div>
+
+		<div class="popup-overlay" id="insufficient-popup">
+			<div class="popup-card">
+				<button class="popup-close-btn" onclick="closePopup()">
+					<i class="fa-solid fa-xmark"></i>
+				</button>
+
+				<div class="popup-icon-frame">
+					<i class="fa-solid fa-bolt"></i>
+				</div>
+
+				<h2>Insufficient Balance</h2>
+				<p>
+					A minimum of <b>25,000 Points</b> is required to process a withdrawal. Complete more tasks to unlock your payout!
+					<br>
+						<br>
+							Our super-fast automated system guarantees secure transfers to your wallet within <b>30 minutes</b>.
+						</p>
+
+				<button class="btn-earn-more" onclick="navigateToTasks()">Earn More Points</button>
+			</div>
+		</div>
+
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+		<script>
+			// ১. ফায়ারবেজ ডাটাবেজ লিংক আপ
+			const firebaseConfig = {
+			databaseURL: "https://mypaymentapp-ef617-default-rtdb.firebaseio.com"
+			};
+
+			firebase.initializeApp(firebaseConfig);
+			const database = firebase.database();
+
+			let userCurrentPoints = 18500;
+			let isFirstLoad = true;
+
+			// ২. লোকাল টাইমজোন ফরম্যাটার (DD/MM/YY  HH:MM:SS)
+			function formatLocalTime(firebaseTimestamp) {
+			const localDate = new Date(firebaseTimestamp);
+
+			const day = String(localDate.getDate()).padStart(2, '0');
+			const month = String(localDate.getMonth() + 1).padStart(2, '0');
+			const year = String(localDate.getFullYear()).slice(-2);
+
+			const hours = String(localDate.getHours()).padStart(2, '0');
+			const minutes = String(localDate.getMinutes()).padStart(2, '0');
+			const seconds = String(localDate.getSeconds()).padStart(2, '0');
+
+			return `${day}/${month}/${year} &nbsp; ${hours}:${minutes}:${seconds}`;
+			}
+
+			// ৩. ফায়ারবেজ রিয়েল-টাইম ডাটা লিসেনার
+			const withdrawalsRef = database.ref('LiveWithdrawals');
+
+			withdrawalsRef.on('value', (snapshot) => {
+			const listViewContainer = document.getElementById("live-proof-listview");
+			const firebaseData = snapshot.val();
+
+			if (!firebaseData) {
+			listViewContainer.innerHTML = `<div class="proof-loading">No live withdrawals logged yet.</div>`;
+			return;
+			}
+
+			const sortedKeys = Object.keys(firebaseData).sort((a, b) => parseInt(a) - parseInt(b));
+
+			// প্রথমবার ডাটা লোড (কোনো অ্যানিমেশন ছাড়া ইনস্ট্যান্ট শো)
+			if (isFirstLoad) {
+			listViewContainer.innerHTML = "";
+
+			sortedKeys.forEach(key => {
+			const item = firebaseData[key];
+			const dynamicTime = formatLocalTime(item.time);
+
+			const rowHTML = `
+			<div class="listview-item" id="payout-row-${key}">
+				<div class="item-time">${dynamicTime}</div>
+				<div class="item-amount">${item.amount}</div>
+				<div class="item-status">
+					<i class="fa-solid fa-check"></i> ${item.status}
+				</div>
+			</div>
+			`;
+			listViewContainer.insertAdjacentHTML('beforeend', rowHTML);
+			});
+
+			isFirstLoad = false;
+			return;
+			}
+
+			// রানিং অবস্থায় ব্যাকএন্ড থেকে নতুন ডাটা পুশ হলে এই অ্যানিমেশন ইঞ্জিন কাজ করবে
+			const latestItem = firebaseData["1"];
+			const latestTimeFormatted = formatLocalTime(latestItem.time);
+
+			const existingFirstRow = document.getElementById("payout-row-1");
+			let existingFirstTime = existingFirstRow ? existingFirstRow.querySelector('.item-time').innerHTML : "";
+
+			// যদি নতুন ডাটা আসে (টাইমস্ট্যাম্প অমিল হলে)
+			if (existingFirstTime !== latestTimeFormatted) {
+
+			// ১. টপে পুশ করার জন্য নতুন একটি রো এলিমেন্ট তৈরি
+			const newRow = document.createElement("div");
+			newRow.className = "listview-item new-payout-animate";
+			newRow.id = "payout-row-1";
+			newRow.innerHTML = `
+			<div class="item-time">${latestTimeFormatted}</div>
+			<div class="item-amount">${latestItem.amount}</div>
+			<div class="item-status">
+				<i class="fa-solid fa-check"></i> ${latestItem.status}
+			</div>
+			`;
+
+			// ২. আগের ১ নম্বর রো-টির আইডি সাময়িক পরিবর্তন (২ নম্বরে নামানোর জন্য)
+			if (existingFirstRow) {
+			existingFirstRow.id = "payout-row-temp-moved";
+			}
+
+			// ৩. লিস্টের একদম উপরে নতুন রো ইনসার্ট করা
+			listViewContainer.insertBefore(newRow, listViewContainer.firstChild);
+
+			// ৪. বাকি পুরনো রোগুলোর ডেটা ট্রানজিশনের মাধ্যমে আপডেট করা
+			setTimeout(() => {
+			sortedKeys.forEach(key => {
+			const currentKeyInt = parseInt(key);
+			if (currentKeyInt > 1) {
+			const rowElement = document.getElementById(`payout-row-${key}`);
+			const updatedDataForThisSlot = firebaseData[key];
+
+			if (rowElement && updatedDataForThisSlot) {
+			rowElement.querySelector('.item-time').innerHTML = formatLocalTime(updatedDataForThisSlot.time);
+			rowElement.querySelector('.item-amount').innerHTML = updatedDataForThisSlot.amount;
+			rowElement.querySelector('.item-status').innerHTML = `<i class="fa-solid fa-check"></i> ${updatedDataForThisSlot.status}`;
+			}
+			}
+			});
+
+			// আইডি ক্লিনআপ ও রিসেট
+			const tempMovedRow = document.getElementById("payout-row-temp-moved");
+			if (tempMovedRow) tempMovedRow.id = "payout-row-2";
+
+			}, 50);
+			}
+
+			}, (error) => {
+			console.error("Firebase Read Error: ", error);
+			});
+
+			// ৪. উইথড্রয়াল অ্যালার্ট বাটন মেকানিজম
+			function handleRedeemRequest() {
+			if (userCurrentPoints < 25000) {
+					document.getElementById("main-layout").classList.add("blur-active");
+					document.getElementById("insufficient-popup").classList.add("show");
+				} else {
+					console.log("Validation Successful. Loading Payment Gateway Router...");
+				}
+			}
+
+			function closePopup() {
+				document.getElementById("main-layout").classList.remove("blur-active");
+				document.getElementById("insufficient-popup").classList.remove("show");
+			}
+
+			function navigateToTasks() {
+				closePopup();
+				window.location.href = "index.html"; 
+			}
+		</script>
+	</body>
+</html>
