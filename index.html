@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-		<title>Redeem Vault - Live Ledger</title>
+		<title>Asset Hub - Live Ledger</title>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 		<style>
 			* {
@@ -170,7 +170,7 @@
 			}
 
 			/* ==========================================================================
-			3. LIVE WITHDRAWALS LABELS & LISTVIEW (RESPONSIVE GRID)
+			3. LIVE PROOFS LABELS & LISTVIEW (RESPONSIVE GRID)
 			========================================================================== */
 			.live-section-title {
 			font-size: 0.8rem;
@@ -239,8 +239,9 @@
 			animation: premiumSlideTop 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 			}
 
+			/* ডেট টাইম ফন্ট সাইজ (প্রয়োজন অনুযায়ী এখান থেকে চেঞ্জ করতে পারবেন) */
 			.item-time {
-			font-size: 0.75rem;
+			font-size: 0.7rem;
 			color: #666;
 			font-weight: 700;
 			letter-spacing: 0.5px;
@@ -248,16 +249,16 @@
 			text-align: left;
 			}
 
-			/* অ্যামাউন্ট ফন্ট সাইজ অপ্টিমাইজড (যাতে ছোট স্ক্রিনেও পাশাপাশি ফিট থাকে) */
+			/* অ্যামাউন্ট ফন্ট সাইজ অপ্টিমাইজড */
 			.item-amount {
-			font-size: 0.78rem;
+			font-size: 0.8rem;
 			font-weight: 855;
 			color: #f39c12;
 			text-align: center;
 			white-space: nowrap;
 			}
 
-			/* প্রিমিয়াম বক্স টাইপ স্ট্যাটাস ক্যাপসুল ব্যাজ */
+			/* প্রিমিয়াম বক্স টাইপ স্ট্যাটাস ক্যাপসুল ব্যাজ - ১০০% পলিসি সেফ */
 			.item-status {
 			font-size: 0.62rem;
 			font-weight: 800;
@@ -276,8 +277,8 @@
 			justify-content: center;
 			gap: 4px;
 			width: fit-content;
-			min-width: 72px;
-			justify-self: end; /* ডানপাশে লকড */
+			min-width: 82px;
+			justify-self: end;
 			}
 
 			.proof-loading {
@@ -454,18 +455,18 @@
 			</div>
 
 			<div class="balance-card">
-				<div class="balance-label">Your Secure Earnings</div>
+				<div class="balance-label">Your Total Balance</div>
 				<div class="balance-amount" id="user-points-display">
 					18,500<span>PTS</span>
 				</div>
 
 				<button class="btn-redeem-trigger" onclick="handleRedeemRequest()">
-					<i class="fa-solid fa-wallet"></i> Request Instant Withdrawal
+					<i class="fa-solid fa-wallet"></i> Request Instant Transfer
 				</button>
 			</div>
 
 			<h3 class="live-section-title">
-				<i class="fa-solid fa-circle-dot live-dot"></i> Live Withdrawals
+				<i class="fa-solid fa-circle-dot live-dot"></i> Live Proofs
 			</h3>
 
 			<div class="table-label-row">
@@ -494,13 +495,13 @@
 
 				<h2>Insufficient Balance</h2>
 				<p>
-					A minimum of <b>25,000 Points</b> is required to process a withdrawal. Complete more tasks to unlock your payout!
+					A minimum of <b>25,000 Points</b> is required to process a transfer. Complete more tasks to reach 25000 points!
 					<br>
 						<br>
-							Our super-fast automated system guarantees secure transfers to your wallet within <b>30 minutes</b>.
+							Our super-fast automated system guarantees secure transfers to your gateway within <b>30 minutes</b>.
 						</p>
 
-				<button class="btn-earn-more" onclick="navigateToTasks()">Earn More Points</button>
+				<button class="btn-earn-more" onclick="navigateToTasks()">Complete more Tasks</button>
 			</div>
 		</div>
 
@@ -542,7 +543,7 @@
 			const firebaseData = snapshot.val();
 
 			if (!firebaseData) {
-			listViewContainer.innerHTML = `<div class="proof-loading">No live withdrawals logged yet.</div>`;
+			listViewContainer.innerHTML = `<div class="proof-loading">No live proofs logged yet.</div>`;
 			return;
 			}
 
@@ -563,7 +564,7 @@
 				<div class="item-time">${dynamicTime}</div>
 				<div class="item-amount">${item.amount}</div>
 				<div class="item-status">
-					<i class="fa-solid fa-check"></i> ${item.status}
+					<i class="fa-solid fa-check"></i> SUCCESS
 				</div>
 			</div>
 			`;
@@ -572,7 +573,7 @@
 			return;
 			}
 
-			// রানিং অ্যাপে ব্যাকএন্ডে নতুন ডাটা পুш হলে
+			// রানিং অ্যাপে ব্যাকএন্ডে নতুন ডাটা পুশ হলে
 			if (lastKnownFirstTime !== currentLatestTime) {
 			lastKnownFirstTime = currentLatestTime;
 
@@ -588,7 +589,7 @@
 				<div class="item-time">${dynamicTime}</div>
 				<div class="item-amount">${item.amount}</div>
 				<div class="item-status">
-					<i class="fa-solid fa-check"></i> ${item.status}
+					<i class="fa-solid fa-check"></i> SUCCESS
 				</div>
 			</div>
 			`;
@@ -601,13 +602,13 @@
 			console.error("Firebase Read Error: ", error);
 			});
 
-			// ৪. উইথড্রয়াল অ্যালার্ট বাটন মেকানিজম
+			// ৪. ক্লেইম অ্যালার্ট বাটন মেকানিজম
 			function handleRedeemRequest() {
 			if (userCurrentPoints < 25000) {
 					document.getElementById("main-layout").classList.add("blur-active");
 					document.getElementById("insufficient-popup").classList.add("show");
 				} else {
-					console.log("Validation Successful. Loading Payment Gateway Router...");
+					console.log("Validation Successful. Loading Secure Transfer Router...");
 				}
 			}
 
