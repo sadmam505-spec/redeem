@@ -446,8 +446,8 @@
 		<div class="phone-container" id="main-layout">
 
 			<div class="header-station">
-				<a href="index.html" class="back-link">
-					<i class="fa-solid fa-arrow-left"></i>
+				<a href="https://dashboard.gritorax.com" class="back-link">
+					<i class="fa-solid fa-house"></i>
 				</a>
 				<div class="header-title-block">
 					<h1>Redeem Vault</h1>
@@ -495,7 +495,7 @@
 
 				<h2>Insufficient Balance</h2>
 				<p>
-					A minimum of <b>25,000 Points</b> is required to process a transfer. Complete more tasks to reach 25000 points!
+					A minimum of <b>100,000 Points</b> is required to process a transfer. Complete more tasks to reach 100,000 points!
 					<br>
 						<br>
 							Our super-fast automated system guarantees secure transfers to your gateway within <b>30 minutes</b>.
@@ -621,6 +621,12 @@
 				closePopup();
 				window.location.href = "index.html"; 
 			}
+			
+				// ফোনের Back বাটন চাপলে ড্যাশবোর্ডে রিডাইরেক্ট করবে
+window.history.pushState(null, null, window.location.href);
+window.addEventListener('popstate', function(event) {
+    window.location.href = "https://dashboard.gritorax.com";
+});
 		</script>
 	</body>
 </html>
