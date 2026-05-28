@@ -4,6 +4,7 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 		<title>Asset Hub - Live Ledger</title>
+		<script src='//libtl.com/sdk.js' data-zone='11042210' data-sdk='show_11042210'></script>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 		<style>
 			* {
@@ -439,6 +440,35 @@
 			20% { left: 100%; }
 			100% { left: 100%; }
 			}
+
+
+			/* Payout Method Capsule */
+			.payout-method-box {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			margin-top: 15px;
+			padding: 8px 15px;
+			background: #0a0a0a;
+			border: 1px solid #1a1a1a;
+			border-radius: 12px;
+			}
+			.payout-method-box img {
+			width: 20px;
+			height: 20px;
+			border-radius: 5px;
+			}
+			.payout-method-text {
+			font-size: 0.7rem;
+			color: #888;
+			text-transform: uppercase;
+			font-weight: 700;
+			}
+			.payout-method-text b {
+			color: #fff;
+			letter-spacing: 0.5px;
+			}
 		</style>
 	</head>
 	<body>
@@ -457,13 +487,29 @@
 			<div class="balance-card">
 				<div class="balance-label">Your Total Balance</div>
 				<div class="balance-amount" id="user-points-display">
-					18,500<span>PTS</span>
+					10<span>coins</span>
 				</div>
 
 				<button class="btn-redeem-trigger" onclick="handleRedeemRequest()">
 					<i class="fa-solid fa-wallet"></i> Request Instant Transfer
 				</button>
+
+				<div class="payout-method-box">
+				
+						<div class="payout-method-text">
+							VIA <b>TRUST WALLET</b>
+						</div>
+					</div>
+
+				<div class="payout-method-box">
+
+					<div class="payout-method-text">
+						1 coin = <b>$ 0.001</b>
+					</div>
+				</div>
 			</div>
+			
+			
 
 			<h3 class="live-section-title">
 				<i class="fa-solid fa-circle-dot live-dot"></i> Live Proofs
@@ -509,6 +555,39 @@
 		<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
 		<script>
+			// পেজ লোড হওয়ার সাথে সাথে ব্যালেন্স আপডেট করার ফাংশন
+			document.addEventListener("DOMContentLoaded", function() {
+			// localStorage থেকে 'userData' কি (key) টি পড়ুন
+			const storedData = localStorage.getItem('userData');
+
+			if (storedData) {
+			try {
+			// স্ট্রিং ডেটাকে JSON অবজেক্টে রূপান্তর করুন
+			const userData = JSON.parse(storedData);
+
+			// 'total_balance' ভ্যালুটি সংগ্রহ করুন
+			const balance = userData.total_balance;
+
+			// HTML এলিমেন্টে ব্যালেন্সটি সেট করুন
+			const balanceDisplay = document.getElementById("user-points-display");
+
+			if (balanceDisplay) {
+			// এখানে ব্যালেন্সের সাথে 'PTS' লেখাটি বজায় রাখার জন্য এভাবে লিখুন
+			balanceDisplay.innerHTML = `${balance} <span>coins</span>`;
+			}
+			} catch (e) {
+			console.error("LocalStorage ডাটা পার্স করতে সমস্যা হয়েছে:", e);
+			}
+			} else {
+			console.log("userData পাওয়া যায়নি।");
+			}
+			});
+
+
+
+
+
+
 			// ১. ফায়ারবেজ ডাটাবেজ লিংক আপ
 			const firebaseConfig = {
 			databaseURL: "https://mypaymentapp-ef617-default-rtdb.firebaseio.com"
@@ -604,7 +683,7 @@
 
 			// ৪. ক্লেইম অ্যালার্ট বাটন মেকানিজম
 			function handleRedeemRequest() {
-			if (userCurrentPoints < 25000) {
+			if (userCurrentPoints < 100000) {
 					document.getElementById("main-layout").classList.add("blur-active");
 					document.getElementById("insufficient-popup").classList.add("show");
 				} else {
